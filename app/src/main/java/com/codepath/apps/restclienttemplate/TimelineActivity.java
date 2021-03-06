@@ -84,17 +84,24 @@ public class TimelineActivity extends AppCompatActivity {
         client.getNextPageOfTweets(new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Headers headers, JSON json) {
-
+                Log.i(TAG, "onSuccess! " + json.toString());
+                // 2. Deserialize and construct new model objects from the API response
+                JSONArray jsonArray = json.jsonArray;
+                try {
+                    List<Tweet> tweets = Tweet.fromJsonArray(jsonArray);
+                    // 3. Append the new data objects to the existing set of items inside the array of items
+                    // 4. Notify the adapter of the new items made with `notifyItemRangeInserted()`
+                    adapter.addAll(tweets);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
 
             @Override
             public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
-
+                Log.e(TAG, "Json exception for loadMoreData", throwable);
             }
-        });
-        // 2. Deserialize and construct new model objects from the API response
-        // 3. Append the new data objects to the existing set of items inside the array of items
-        // 4. Notify the adapter of the new items made with `notifyItemRangeInserted()`
+        }, tweets.get(tweets.size()-1).id);
     }
 
     private void populateHomeTimeline() {
